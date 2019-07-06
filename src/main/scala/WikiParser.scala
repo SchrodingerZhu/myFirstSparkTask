@@ -35,7 +35,6 @@ object WikiParser {
     } yield Storage(page._1.text, for (k <- linkList if passTest(k)) yield k.group(1))
 
 
-    println("Links found: " + totalLink.map(x => x.value.length).reduce((x, y) => x + y))
     val output = Utils.createStream(wikiname + ".json")
     val objects =  totalLink.collect()
     output.writeChars(objects.toJson.toString)
