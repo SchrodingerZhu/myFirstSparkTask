@@ -5,7 +5,7 @@ import spray.json.DefaultJsonProtocol._
 import spray.json._
 
 import scala.util.matching.Regex
-import scala.xml.{NodeSeq, XML}
+import scala.xml.XML
 
 
 case class Storage(key: String, value: List[String])
@@ -20,27 +20,27 @@ object WikiParser {
   def main(argv: Array[String]): Unit = {
     val wikiname = "/user/ubuntu/wp/jvwiki"
     println("Working on: " + wikiname)
-    val source = Utils.session.sparkContext.parallelize(Seq(Utils.openStream(wikiname + ".xml")))
-
-    val pages: RDD[(NodeSeq, NodeSeq)] = for {
-      file <- source
-      wikiXML <- List(XML.load(file))
+    val wikiXML = XML.load(Utils.openStream(wikiname + ".xml"))
+    val pages = for {
       page <- wikiXML \\ "page"
-    } yield (page \ "title", page \\ "text")
+    } yield ((page \ "title").text, (page \\ "text").text)
 
-    println("Pages found: " + pages.count())
+    println("Pages found: " + pages.length.toString)
+
+    val pageRDD = Utils.session.sparkContext.parallelize(pages)
 
 
     val totalLink: RDD[Storage] = for {
-      page <- pages
-      linkList <- List(pattern.findAllMatchIn(page._2.text).toList)
-    } yield Storage(page._1.text, for (k <- linkList if passTest(k)) yield k.group(1))
+      page <- pageRDD
+      linkList <- List(pattern.findAllMatchIn(page._2).toList)
+    } yield Storage(page._1, for (k <- linkList if passTest(k)) yield k.group(1))
 
+
+    println("Links found: " + totalLink.map(x => x.value.length).reduce((x, y) => x + y))
 
     val output = Utils.createStream(wikiname + ".json")
-    val objects =  totalLink.collect()
-    output.writeChars(objects.toJson.toString)
-    output.close()
+    val objects =  totalLink map (x => x.toJson.toString)
+    output.writeChars("[" + totalLink.collect().mkString(", ") + "]")
     println("Saved.")
   }
 
