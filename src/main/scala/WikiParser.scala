@@ -5,7 +5,7 @@ import spray.json.DefaultJsonProtocol._
 import spray.json._
 
 import scala.util.matching.Regex
-import scala.xml.XML
+import scala.xml.{NodeSeq, XML}
 
 
 case class Storage(key: String, value: List[String])
@@ -20,17 +20,19 @@ object WikiParser {
   def main(argv: Array[String]): Unit = {
     val wikiname = "/user/ubuntu/wp/jvwiki"
     println("Working on: " + wikiname)
-    val wikiXML = XML.load(Utils.openStream(wikiname + ".xml"))
-    val pages = for {
+    val source = Utils.session.sparkContext.parallelize(Seq(Utils.openStream(wikiname + ".xml")))
+
+    val pages: RDD[(NodeSeq, NodeSeq)] = for {
+      file <- source
+      wikiXML <- List(XML.load(file))
       page <- wikiXML \\ "page"
     } yield (page \ "title", page \\ "text")
-    println("Pages found: " + pages.length.toString)
 
-    val pageRDD = Utils.session.sparkContext.parallelize(pages)
+    println("Pages found: " + pages.count())
 
 
     val totalLink: RDD[Storage] = for {
-      page <- pageRDD
+      page <- pages
       linkList <- List(pattern.findAllMatchIn(page._2.text).toList)
     } yield Storage(page._1.text, for (k <- linkList if passTest(k)) yield k.group(1))
 
