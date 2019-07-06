@@ -38,13 +38,12 @@ object WikiParser {
 
     implicit val defaultJsonProtocol: RootJsonFormat[Storage] = jsonFormat2(Storage)
 
-    val file = new File(wikiname + ".json")
-    val bw = new BufferedWriter(new FileWriter(file))
+
+
+    val output = Utils.createStream(wikiname + ".json")
     val objects: RDD[String] = totalLink map (x => x.toJson.toString)
-
-    bw.write("[" + objects.collect().mkString(", ") + "]")
-    bw.close()
-
+    output.writeChars("[" + objects.collect().mkString(", ") + "]")
+    output.close()
     println("Saved.")
   }
 

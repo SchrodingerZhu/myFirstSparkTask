@@ -1,6 +1,6 @@
 import org.apache.spark.SparkConf
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
+import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.spark.sql.SparkSession
 
 object Utils {
@@ -17,5 +17,9 @@ object Utils {
 
   def openStream(s : String) : FSDataInputStream = {
     fs.open(new Path(s))
+  }
+
+  def createStream(s : String) : FSDataOutputStream = {
+    fs.create(new Path(s))
   }
 }
