@@ -17,7 +17,7 @@ object WikiParser {
   val pat2: Regex = raw".*:.*".r // Namespaced
 
   def main(argv: Array[String]): Unit = {
-    val wikiname = "/user/ubuntu/wp/jvwiki"
+    val wikiname = "/user/ubuntu/wp/furwiki"
     println("Working on: " + wikiname)
     val wikiXML = XML.load(Utils.openStream(wikiname + ".xml"))
     val pages = for {
