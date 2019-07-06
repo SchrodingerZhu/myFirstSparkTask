@@ -19,7 +19,7 @@ object WikiParser {
   def main(argv: Array[String]): Unit = {
     val wikiname = "/user/ubuntu/wp/jvwiki"
     println("Working on: " + wikiname)
-    val wikiXML = XML.load(Utils.openStream(wikiname + "xml"))
+    val wikiXML = XML.load(Utils.openStream(wikiname + ".xml"))
     val pages = for {
       page <- wikiXML \\ "page"
     } yield (page \ "title", page \\ "text")
