@@ -20,6 +20,6 @@ object Utils {
   }
 
   def createStream(s : String) : FSDataOutputStream = {
-    fs.create(new Path(s))
+    fs.create(new Path(s), true)
   }
 }

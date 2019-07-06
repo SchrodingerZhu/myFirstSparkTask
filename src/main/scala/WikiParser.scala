@@ -15,9 +15,10 @@ object WikiParser {
   val pattern: Regex = raw"\[\[(.+?)(\|.+)*\]\]".r // Any link
   val pat1: Regex = raw"\{\{.+\}\}".r // Magicstring
   val pat2: Regex = raw".*:.*".r // Namespaced
+  implicit val defaultJsonProtocol: RootJsonFormat[Storage] = jsonFormat2(Storage)
 
   def main(argv: Array[String]): Unit = {
-    val wikiname = "/user/ubuntu/wp/furwiki"
+    val wikiname = "/user/ubuntu/wp/jvwiki"
     println("Working on: " + wikiname)
     val wikiXML = XML.load(Utils.openStream(wikiname + ".xml"))
     val pages = for {
@@ -35,14 +36,9 @@ object WikiParser {
 
 
     println("Links found: " + totalLink.map(x => x.value.length).sum)
-
-    implicit val defaultJsonProtocol: RootJsonFormat[Storage] = jsonFormat2(Storage)
-
-
-
     val output = Utils.createStream(wikiname + ".json")
-    val objects: RDD[String] = totalLink map (x => x.toJson.toString)
-    output.writeChars("[" + objects.collect().mkString(", ") + "]")
+    val objects =  totalLink.collect()
+    output.writeChars(objects.toJson.toString)
     output.close()
     println("Saved.")
   }
@@ -54,7 +50,4 @@ object WikiParser {
       case _ => true
     }
   }
-
-
-
 }
