@@ -15,7 +15,7 @@ object WikiParser {
 
   val pattern: Regex = raw"\[\[(.+?)(\|.+)*\]\]".r // Any link
   implicit val defaultJsonProtocol: RootJsonFormat[Storage] = jsonFormat2(Storage)
-  val counter: LongAccumulator = Utils.session.sparkContext.longAccumulator("Work Count")
+  val counter: LongAccumulator = Utils.session.sparkContext.longAccumulator("counter")
 
   def main(argv: Array[String]): Unit = {
     val wikiname = "/user/ubuntu/wp/jvwiki"
@@ -37,6 +37,7 @@ object WikiParser {
         counter.add(1)
         Storage(page,  links)
     }
+
     println("Links found: " + totalLink.map(x => x.value.length).reduce((x, y) => x + y))
 
     val output = Utils.createStream(wikiname + ".json")
