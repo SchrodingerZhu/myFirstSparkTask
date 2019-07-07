@@ -9,7 +9,7 @@ import scala.util.matching.Regex
 import scala.xml.XML
 
 
-case class Storage(key: String, value: List[String])
+case class Storage(key: String, value: Array[String])
 
 object WikiParser {
 
@@ -33,8 +33,8 @@ object WikiParser {
 
     val totalLink: RDD[Storage] = pageRDD.map {
       case (page, text) =>
-        val links = pattern.findAllMatchIn(text).filter(passTest).map(x => x.group(1)).toList
-        counter.add(1)
+        val links = pattern.findAllMatchIn(text).filter(passTest).map(x => x.group(1)).toArray
+        counter.add(links.length)
         Storage(page,  links)
     }
 
