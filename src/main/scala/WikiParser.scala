@@ -21,33 +21,33 @@ object WikiParser {
     val wikiname = "/user/ubuntu/wp/jvwiki"
     println("Working on: " + wikiname)
     val wikiXML = XML.load(Utils.openStream(wikiname + ".xml"))
-    val pages = for {
+    val pages = {for {
       page <- wikiXML \\ "page"
-    } yield ((page \ "title").text, (page \\ "text").text)
+
+    } yield ((page \ "title").text, (page \\ "text").text)}.filterNot( x => x._1 contains ":" )
 
     println("Pages found: " + pages.length.toString)
 
     val pageRDD: RDD[(String, String)] = Utils.session.sparkContext.parallelize(pages)
 
 
-
     val totalLink: RDD[Storage] = pageRDD.map {
       case (page, text) =>
         val links = pattern.findAllMatchIn(text).filter(passTest).map(x => x.group(1)).toArray
         counter.add(links.length)
-        Storage(page,  links)
+        Storage(page, links)
     }
 
     println("Links found: " + totalLink.map(x => x.value.length).reduce((x, y) => x + y))
 
     val output = Utils.createStream(wikiname + ".json")
-    val objects =  totalLink map (x => x.toJson.toString)
+    val objects = totalLink map (x => x.toJson.toString)
     output.writeChars("[" + totalLink.collect().mkString(", ") + "]")
     println("Saved.")
   }
 
   def passTest(value: Regex.Match): Boolean = {
     val argumentName: String = value.group(1)
-    !((argumentName startsWith "{{") || (argumentName startsWith "[[")  || (argumentName contains  ":") )
+    !((argumentName startsWith "{{") || (argumentName contains ":"))
   }
 }
