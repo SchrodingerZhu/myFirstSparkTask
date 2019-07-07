@@ -13,8 +13,6 @@ case class Storage(key: String, value: List[String])
 object WikiParser {
 
   val pattern: Regex = raw"\[\[(.+?)(\|.+)*\]\]".r // Any link
-  val pat1: Regex = raw"\{\{.+\}\}".r // Magicstring
-  val pat2: Regex = raw".*:.*".r // Namespaced
   implicit val defaultJsonProtocol: RootJsonFormat[Storage] = jsonFormat2(Storage)
 
   def main(argv: Array[String]): Unit = {
