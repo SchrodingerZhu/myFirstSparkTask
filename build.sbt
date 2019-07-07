@@ -14,7 +14,13 @@ fork := true
 enablePlugins(AssemblyPlugin)
 
 
+
 assemblyMergeStrategy in assembly := {
+  case PathList("org","aopalliance", xs @ _*) => MergeStrategy.last
+  case PathList("javax", "inject", xs @ _*) => MergeStrategy.last
+  case PathList("org", "apache", xs @ _*) => MergeStrategy.last
+  case "git.properties" => MergeStrategy.last
+  case "mime.types" => MergeStrategy.last
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
   case x => MergeStrategy.first
 }

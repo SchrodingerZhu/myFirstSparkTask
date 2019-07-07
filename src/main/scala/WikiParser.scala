@@ -18,7 +18,7 @@ object WikiParser {
   implicit val defaultJsonProtocol: RootJsonFormat[Storage] = jsonFormat2(Storage)
 
   def main(argv: Array[String]): Unit = {
-    val wikiname = "/user/ubuntu/wp/jvwiki"
+    val wikiname = "/user/ubuntu/wp/furwiki"
     println("Working on: " + wikiname)
     val wikiXML = XML.load(Utils.openStream(wikiname + ".xml"))
     val pages = for {
@@ -27,7 +27,7 @@ object WikiParser {
 
     println("Pages found: " + pages.length.toString)
 
-    val pageRDD = Utils.session.sparkContext.parallelize(pages)
+    val pageRDD: RDD[(String, String)] = Utils.session.sparkContext.parallelize(pages)
 
 
     val totalLink: RDD[Storage] = for {
@@ -46,9 +46,6 @@ object WikiParser {
 
   def passTest(value: Regex.Match): Boolean = {
     val argumentName: String = value.group(1)
-    argumentName match {
-      case pat1() | pat2() => false
-      case _ => true
-    }
+    !((argumentName startsWith "{{") || (argumentName startsWith "[[")  || (argumentName contains  ":") )
   }
 }
